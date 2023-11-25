@@ -52,7 +52,7 @@ class LexicalAnalyzer:
         lex = Lexeme(lt, start, val)
         self.__res.append(lex)
 
-    def process(self, code: str) -> None:
+    def process(self, code: str) -> list[Lexeme]:
         self.__state = self.State.S
         self.__res: list[Lexeme] = []
 
@@ -173,10 +173,10 @@ class LexicalAnalyzer:
 
 
 if __name__ == "__main__":
-    from pprint import pprint
     la = LexicalAnalyzer()
     print("Введите цепочку для лексического анализа:")
     code = input()
     res = la.process(code)
     print("Результат")
-    pprint(res)
+    for i, l in enumerate(res):
+        print(f"{i}: позиция {l.pos}, тип {l.l_type}, значение {l.val}")
