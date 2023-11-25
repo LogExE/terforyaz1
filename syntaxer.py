@@ -165,6 +165,9 @@ class SyntaxAnalyzer:
         self.__idx = 0
         self.__lex = lexemes
         self.__res = self.__process_for()
+        if self.__res and self.__idx != len(lexemes):
+            self.__set_err("Неожиданная лексема в конце")
+            self.__res = False
 
         return self.__res
 
