@@ -123,7 +123,7 @@ if __name__ == "__main__":
 
         ipr = Interpreter()
         ipr.interpret(code_poliz)
-        print(tabulate([(i, " ".join(colored(x, 'blue', attrs=['bold']) if ent.cmd_idx == j else x for j, x in enumerate(poliz_str)), ent.stack, ent.var)
+        print(tabulate([(i, " ".join(colored(x, 'magenta', attrs=['bold']) if ent.cmd_idx == j else x for j, x in enumerate(poliz_str)), ent.stack, ent.var)
                         for i, ent in enumerate(ipr.logs())],
                        headers=["Шаг", "Счетчик команд", "Стек", "Переменные", "Действие"]))
         print("Выводы:")
