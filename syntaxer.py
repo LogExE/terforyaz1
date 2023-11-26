@@ -252,7 +252,6 @@ class SyntaxAnalyzer:
 
 if __name__ == "__main__":
     from lexer import LexicalAnalyzer
-    from pprint import pprint
     print("Введите цепочку для синтаксического анализа. Перед этим на ней будет проведен лекисческий анализ.")
     code = input()
     la = LexicalAnalyzer()
@@ -264,7 +263,7 @@ if __name__ == "__main__":
     sa = SyntaxAnalyzer()
     syn = sa.process(lexemes)
     print("Результат синтаксического анализа")
-    pprint(syn)
+    print(syn)
     if not syn:
         pos, err = sa.whatswrong()
         print(f"Ошибка около позиции {pos}: {err}")
