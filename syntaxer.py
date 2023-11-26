@@ -38,7 +38,7 @@ class SyntaxAnalyzer:
 
     def __poliz_cur_addr(self) -> int:
         return len(self.__poliz) - 1
-    
+
     def __set_addr(self, idx: int, addr: int) -> None:
         self.__poliz[idx].value = addr
 
@@ -62,27 +62,35 @@ class SyntaxAnalyzer:
     def __process_condition(self) -> bool:
         if not self.__process_condition1():
             return False
+
         while True:
             lor = self.__peek()
             if lor is None or lor.l_type != LexemeType.OR:
                 break
             self.__pop()
+
             if not self.__process_condition1():
                 return False
+
             self.__add_cmd(Command.OR)
+
         return True
 
     def __process_condition1(self) -> bool:
         if not self.__process_condition2():
             return False
+
         while True:
             land = self.__peek()
             if land is None or land.l_type != LexemeType.AND:
                 break
             self.__pop()
+
             if not self.__process_condition2():
                 return False
+
             self.__add_cmd(Command.AND)
+
         return True
 
     def __process_condition2(self) -> bool:
@@ -92,21 +100,28 @@ class SyntaxAnalyzer:
             return False
         if le1.l_type == LexemeType.NOT:
             self.__pop()
+
         if not self.__process_rel():
             return False
+
         if le1.l_type == LexemeType.NOT:
             self.__add_cmd(Command.NOT)
+
         return True
 
     def __process_rel(self) -> bool:
         if not self.__process_operand():
             return False
+
         lrel = self.__peek()
         if lrel is not None and lrel.l_type == LexemeType.REL:
             self.__pop()
+
             if not self.__process_operand():
                 return False
+
             self.__add_cmd(self.relcmd[lrel.val])
+
         return True
 
     def __process_operand(self) -> bool:
@@ -115,36 +130,46 @@ class SyntaxAnalyzer:
             self.__set_err("Ожидалася операнд")
             return False
         self.__pop()
-        if le.l_type == LexemeType.VAR: # poliz var operand
-            self.__add_var(le.val) 
-        else: # poliz const operand
-            self.__add_const(le.val)  
+
+        if le.l_type == LexemeType.VAR:  # poliz var operand
+            self.__add_var(le.val)
+        else:  # poliz const operand
+            self.__add_const(le.val)
+
         return True
 
     def __process_arithexpr(self) -> bool:
         if not self.__process_arithexpr1():
             return False
+
         while True:
             laopm = self.__peek()
             if laopm is None or laopm.l_type != LexemeType.AOPM:
                 break
             self.__pop()
+
             if not self.__process_arithexpr1():
                 return False
-            self.__add_cmd(self.aopmcmd[laopm.val]) # poliz add | sub
+
+            self.__add_cmd(self.aopmcmd[laopm.val])  # poliz add | sub
+
         return True
 
     def __process_arithexpr1(self) -> bool:
         if not self.__process_operand():
             return False
+
         while True:
             laomd = self.__peek()
             if laomd is None or laomd.l_type != LexemeType.AOMD:
                 break
             self.__pop()
+
             if not self.__process_operand():
                 return False
-            self.__add_cmd(self.aomdcmd[laomd.val]) # poliz mul | div
+
+            self.__add_cmd(self.aomdcmd[laomd.val])  # poliz mul | div
+
         return True
 
     def __process_operator(self) -> bool:
@@ -153,32 +178,41 @@ class SyntaxAnalyzer:
             self.__set_err("Ожидалось начало оператора")
             return False
         self.__pop()
+
         if le1.l_type == LexemeType.VAR:
-            self.__add_var(le1.val) # poliz assignment var
+            self.__add_var(le1.val)  # poliz assignment var
+
             le2 = self.__peek()
             if le2 is None or le2.l_type != LexemeType.ASSIGN:
                 self.__set_err("Ожидался знак присваивания")
                 return False
             self.__pop()
+
             if not self.__process_arithexpr():
                 return False
-            self.__add_cmd(Command.SET) # poliz assignment cmd
+
+            self.__add_cmd(Command.SET)  # poliz assignment cmd
         else:
             if not self.__process_operand():
                 return False
+
             self.__add_cmd(Command.OUT)
+
         return True
 
     def __process_operators(self) -> bool:
         if not self.__process_operator():
             return False
+
         while True:
             semicol = self.__peek()
             if semicol is None or semicol.l_type != LexemeType.SEMICOL:
                 break
             self.__pop()
+
             if not self.__process_operator():
                 return False
+
         return True
 
     def __process_for(self) -> bool:
@@ -187,48 +221,66 @@ class SyntaxAnalyzer:
             self.__set_err("Ожидался for")
             return False
         self.__pop()
+
         lvar = self.__peek()
         if lvar is None or lvar.l_type != LexemeType.VAR:
             self.__set_err("Ожидалась перменная цикла")
             return False
         self.__pop()
-        self.__add_var(lvar.val) # poliz for variable
+
+        self.__add_var(lvar.val)  # poliz for variable
+
         las = self.__peek()
         if las is None or las.l_type != LexemeType.ASSIGN:
             self.__set_err("Ожидался знак присваивания")
             return False
         self.__pop()
+
         if not self.__process_arithexpr():
             return False
-        self.__add_cmd(Command.SET) # poliz for var set
+
+        self.__add_cmd(Command.SET)  # poliz for var set
+
         lto = self.__peek()
         if lto is None or lto.l_type != LexemeType.TO:
             self.__set_err("Ожидался to")
             return False
         self.__pop()
-        ind_first = len(self.__poliz) # poliz begin addr
-        self.__add_var(lvar.val) # poliz for condition 
+
+        ind_first = self.__add_var(lvar.val)  # poliz for condition
+        # saved address "ind_first" for JMP in the end
+
         if not self.__process_arithexpr():
             return False
+
         self.__add_cmd(Command.CMPG)
-        self.__add_cmd(Command.NOT) # poliz check for condition
-        ind_jmp = self.__add_addr(-1) # dummy value
+        self.__add_cmd(Command.NOT)  # poliz check for condition
+        ind_jmp = self.__add_addr(-1)  # dummy value
+        # saved address "ind_jmp" for changing dummy value to meaningful later
         self.__add_cmd(Command.JZ)
+
         if not self.__process_operators():
             return False
+
         self.__add_var(lvar.val)
-        self.__add_var(lvar.val) 
+
+        self.__add_var(lvar.val)
         self.__add_const(1)
         self.__add_cmd(Command.ADD)
-        self.__add_cmd(Command.SET) # poliz for var increment
+
+        self.__add_cmd(Command.SET)  # poliz for var increment
+
         lnext = self.__peek()
         if lnext is None or lnext.l_type != LexemeType.NEXT:
             self.__set_err("Ожидался next")
             return False
         self.__pop()
+
         self.__add_addr(ind_first)
         ind_last = self.__add_cmd(Command.JMP)
+        
         self.__set_addr(ind_jmp, ind_last + 1)
+
         return True
 
     def process(self, lexemes: list[Lexeme]) -> bool:
@@ -240,6 +292,7 @@ class SyntaxAnalyzer:
         if self.__res and self.__idx != len(lexemes):
             self.__set_err("Неожиданная лексема в конце")
             self.__res = False
+
         if self.__res:
             self.__add_cmd(Command.NOOP)
 
@@ -247,7 +300,7 @@ class SyntaxAnalyzer:
 
     def whatswrong(self) -> tuple[int, str]:
         return (self.__errpos, self.__err)
-    
+
     def poliz(self) -> list[PostfixEntry]:
         return self.__poliz
 
