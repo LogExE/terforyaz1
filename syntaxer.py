@@ -216,9 +216,11 @@ class SyntaxAnalyzer:
         self.__add_cmd(Command.JZ)
         if not self.__process_operators():
             return False
+        self.__add_var(lvar.val)
         self.__add_var(lvar.val) 
         self.__add_const(1)
-        self.__add_cmd(Command.ADD) # poliz for var increment
+        self.__add_cmd(Command.ADD)
+        self.__add_cmd(Command.SET) # poliz for var increment
         lnext = self.__peek()
         if lnext is None or lnext.l_type != LexemeType.NEXT:
             self.__set_err("Ожидался next")
