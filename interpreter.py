@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 from poliz import PostfixEntry, PostfixEntryType, Command
 
+
 @dataclass
 class LogEntry:
     stack: list[int | str]
@@ -9,12 +10,14 @@ class LogEntry:
     cmd_idx: int
     action: str
 
+
 class Interpreter:
     def __pop_val(self) -> int:
         op = self.__stak.pop()
         if isinstance(op, str):
             if op not in self.__vars:
-                self.__vars[op] = int(input("Введите значение переменной " + op + ": "))
+                self.__vars[op] = int(
+                    input("Введите значение переменной " + op + ": "))
             return self.__vars[op]
         return op
 
@@ -80,7 +83,8 @@ class Interpreter:
                 action = "PUSH"
                 self.__push_elem(entry)
                 self.__cmd_idx += 1
-            self.__log.append(LogEntry(self.__vars.copy(), self.__stak.copy(), self.__cmd_idx, action))
+            self.__log.append(LogEntry(self.__vars.copy(),
+                              self.__stak.copy(), self.__cmd_idx, action))
 
     def logs(self) -> list[LogEntry]:
         return self.__log
@@ -106,7 +110,7 @@ if __name__ == "__main__":
     else:
         ipr = Interpreter()
         ipr.interpret(sa.poliz())
-        print(tabulate([(i, ent.cmd_idx, ent.stack, ent.var, ent.action) for i, ent in enumerate(ipr.logs())], 
-                       headers=["Шаг", "Счетчик команд", "Стек", "Переменные", "Действие"]))
+        print(tabulate([(i, ent.cmd_idx, ent.stack, ent.var, ent.action) for i, ent in enumerate(ipr.logs())],
+                       headers=["Шаг", "Счетчик команд", "Стек", "Переменные", "Действие"], tablefmt='presto'))
         print("Выводы:")
         print(ipr.outputs())
