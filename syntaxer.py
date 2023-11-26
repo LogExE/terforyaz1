@@ -182,7 +182,6 @@ class SyntaxAnalyzer:
         return True
 
     def __process_for(self) -> bool:
-        ind_first = len(self.__poliz) # poliz begin addr
         lfor = self.__peek()
         if lfor is None or lfor.l_type != LexemeType.FOR:
             self.__set_err("Ожидался for")
@@ -207,6 +206,7 @@ class SyntaxAnalyzer:
             self.__set_err("Ожидался to")
             return False
         self.__pop()
+        ind_first = len(self.__poliz) # poliz begin addr
         self.__add_var(lvar.val) # poliz for condition 
         if not self.__process_arithexpr():
             return False
