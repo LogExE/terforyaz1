@@ -35,12 +35,12 @@ class Interpreter:
         Command.SUB: lambda x, y: x - y,
         Command.MUL: lambda x, y: x * y,
         Command.DIV: lambda x, y: x // y,
-        Command.CMPE: lambda x, y: x == y,
-        Command.CMPNE: lambda x, y: x != y,
-        Command.CMPG: lambda x, y: x > y,
-        Command.CMPL: lambda x, y: x < y,
-        Command.AND: lambda x, y: bool(x and y),
-        Command.OR: lambda x, y: bool(x or y)
+        Command.CMPE: lambda x, y: int(x == y),
+        Command.CMPNE: lambda x, y: int(x != y),
+        Command.CMPG: lambda x, y: int(x > y),
+        Command.CMPL: lambda x, y: int(x < y),
+        Command.AND: lambda x, y: int(x and y),
+        Command.OR: lambda x, y: int(x or y)
     }
 
     def interpret(self, postfix: list[PostfixEntry]) -> None:
@@ -73,7 +73,7 @@ class Interpreter:
                     self.__push_val(self.cmdbinop[entry.value](op2, op1))
                     self.__cmd_idx += 1
                 elif entry.value == Command.NOT:
-                    self.__push_val(not self.__pop_val())
+                    self.__push_val(int(not self.__pop_val()))
                     self.__cmd_idx += 1
                 elif entry.value == Command.OUT:
                     self.__outs.append(self.__pop_val())
