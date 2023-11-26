@@ -8,7 +8,6 @@ class LogEntry:
     stack: list[int | str]
     var: dict[str, int]
     cmd_idx: int
-    action: str
 
 
 class Interpreter:
@@ -51,10 +50,12 @@ class Interpreter:
         self.__log = []
 
         self.__cmd_idx = 0
+        self.__log.append(LogEntry(self.__stak.copy(),
+                                   self.__vars.copy(), self.__cmd_idx))
+
         while self.__cmd_idx != len(postfix):
             entry = postfix[self.__cmd_idx]
             if entry.type == PostfixEntryType.CMD:
-                action = entry.value
                 if entry.value == Command.JMP:
                     self.__cmd_idx = self.__pop_val()
                 elif entry.value == Command.JZ:
@@ -80,11 +81,10 @@ class Interpreter:
                 elif entry.value == Command.NOOP:
                     self.__cmd_idx += 1
             else:
-                action = "PUSH"
                 self.__push_elem(entry)
                 self.__cmd_idx += 1
-            self.__log.append(LogEntry(self.__vars.copy(),
-                              self.__stak.copy(), self.__cmd_idx, action))
+            self.__log.append(LogEntry(self.__stak.copy(),
+                              self.__vars.copy(), self.__cmd_idx))
 
     def logs(self) -> list[LogEntry]:
         return self.__log
@@ -97,6 +97,7 @@ if __name__ == "__main__":
     from lexer import LexicalAnalyzer
     from syntaxer import SyntaxAnalyzer
     from tabulate import tabulate
+    from termcolor import colored
     print("Введите цепочку для интерпретации.")
     code = input()
     la = LexicalAnalyzer()
@@ -108,9 +109,22 @@ if __name__ == "__main__":
         pos, err = sa.whatswrong()
         print(f"Ошибка около позиции {pos}: {err}")
     else:
+        print("Код, переведенный в ПОЛИЗ:")
+        code_poliz = sa.poliz()
+        poliz_str = []
+        for el in code_poliz:
+            if el.type == PostfixEntryType.CMD:
+                el_str = str(el.value).split(".")[1]
+            else:
+                el_str = str(el.value)
+            poliz_str.append(el_str)
+        print(" ".join(poliz_str))
+        print()
+
         ipr = Interpreter()
-        ipr.interpret(sa.poliz())
-        print(tabulate([(i, ent.cmd_idx, ent.stack, ent.var, ent.action) for i, ent in enumerate(ipr.logs())],
-                       headers=["Шаг", "Счетчик команд", "Стек", "Переменные", "Действие"], tablefmt='presto'))
+        ipr.interpret(code_poliz)
+        print(tabulate([(i, " ".join(colored(x, 'blue', attrs=['bold']) if ent.cmd_idx == j else x for j, x in enumerate(poliz_str)), ent.stack, ent.var)
+                        for i, ent in enumerate(ipr.logs())],
+                       headers=["Шаг", "Счетчик команд", "Стек", "Переменные", "Действие"]))
         print("Выводы:")
         print(ipr.outputs())
